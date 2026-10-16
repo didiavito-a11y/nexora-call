@@ -1,10 +1,27 @@
 from flask import Flask, render_template, request, jsonify
 import json
 import os
+import requests
 
 app = Flask(__name__)
 
 CLIENTS_FILE = 'clients.json'
+
+# Configuration Telegram pour Nexora Call
+TELEGRAM_BOT_TOKEN = "8247690577:AAGlSd1QLkkgjq57ew7f47YhQPGjt_fyxk8"
+TELEGRAM_CHAT_ID = "5160272648"
+
+def envoyer_alerte_telegram(message):
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    payload = {
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": message,
+        "parse_mode": "Markdown"
+    }
+    try:
+        requests.post(url, json=payload)
+    except Exception as e:
+        print("Erreur lors de l'envoi de l'alerte Telegram :", e)
 
 def charger_clients():
     if not os.path.exists(CLIENTS_FILE):
@@ -33,7 +50,6 @@ def index():
 @app.route('/api/verifier', methods=['POST'])
 def verifier():
     # --- SÉCURITÉ : VÉRIFICATION DE LA CLÉ CLIENT ET DE L'APPAREIL ---
-    # On récupère la clé dans l'URL (ex: /api/verifier?key=DUPONT_9284)
     client_key = request.args.get('key')
     
     if not client_key:
@@ -57,13 +73,26 @@ def verifier():
         }), 403
 
     client_data = clients[client_key]
-    current_ip = request.remote_addr
+    
+    # Récupération propre de l'IP réelle, même derrière le proxy de Railway
+    current_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    if ',' in current_ip:
+        current_ip = current_ip.split(',')[0].strip()
 
     # Verrouillage sur le premier appareil qui utilise la clé
     if client_data.get("appareil_autorise") is None:
         client_data["appareil_autorise"] = current_ip
         sauvegarder_clients(clients)
     elif client_data["appareil_autorise"] != current_ip:
+        # Envoi de l'alerte sur ton Telegram
+        alerte_msg = (
+            f"🚨 *Tentative d'accès suspecte sur Nexora Call !*\n\n"
+            f"🔑 Clé concernée : `{client_key}`\n"
+            f"🔒 IP autorisée d'origine : `{client_data['appareil_autorise']}`\n"
+            f"❌ IP bloquée (suspecte) : {current_ip}"
+        )
+        envoyer_alerte_telegram(alerte_msg)
+
         return jsonify({
             "status": "alerte-rouge",
             "numero": "Erreur",
@@ -89,7 +118,6 @@ def verifier():
     contact_info = ANNUAIRE_CONTACTS.get(numero)
 
     if contact_info:
-        # Le numéro est enregistré et identifié
         resultat = {
             "status": "alerte-verte",
             "numero": numero,
@@ -98,7 +126,6 @@ def verifier():
             "message": f"Appel reconnu : {contact_info['nom']}. La ligne est totalement sûre."
         }
     elif numero.startswith('+') and not numero.startswith('+33'):
-        # Appel international suspect
         resultat = {
             "status": "alerte-rouge",
             "numero": numero,
@@ -107,7 +134,6 @@ def verifier():
             "message": "Ce n'est PAS votre banque qui appelle. L'appel provient d'un réseau international non sécurisé. Raccrochez immédiatement."
         }
     elif numero.startswith('01') or numero.startswith('09') or numero.startswith('+331') or numero.startswith('+339'):
-        # Ligne fixe potentiellement piégée
         resultat = {
             "status": "alerte-rouge",
             "numero": numero,
@@ -116,7 +142,6 @@ def verifier():
             "message": "Attention : Ce numéro fixe simule un organisme. Si l'interlocuteur demande vos codes ou valide une opération, c'est une fraude caractérisée."
         }
     else:
-        # Numéro standard non répertorié
         resultat = {
             "status": "neutre",
             "numero": numero,
