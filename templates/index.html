@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexora Call - Protection Active</title>
+    <style>
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        body { 
+            background: #030712; 
+            color: #f8fafc; 
+            margin: 0; 
+            padding: 24px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container { 
+            width: 100%; 
+            max-width: 400px; 
+            text-align: center;
+        }
+        
+        .brand-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .brand-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #38bdf8;
+            border-radius: 50%;
+            box-shadow: 0 0 12px #38bdf8;
+        }
+        .brand-name { font-size: 16px; font-weight: 700; letter-spacing: 2px; color: #e2e8f0; text-transform: uppercase; }
+
+        .card { 
+            background: #111827; 
+            border: 1px solid #1f2937; 
+            border-radius: 24px; 
+            padding: 36px 28px; 
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+            transition: all 0.3s ease;
+        }
+        
+        .card.neutre { 
+            border-color: #1e3a8a; 
+            box-shadow: 0 20px 40px rgba(3, 7, 18, 0.9);
+        }
+        .card.alerte-rouge { 
+            border-color: #dc2626; 
+            background: #18080c; 
+            box-shadow: 0 20px 40px rgba(220, 38, 38, 0.25);
+        }
+        .card.alerte-verte { 
+            border-color: #16a34a; 
+            background: #061a10; 
+            box-shadow: 0 20px 40px rgba(22, 163, 74, 0.2);
+        }
+
+        .status-header-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #22c55e;
+            border-radius: 50%;
+            animation: pulse-animation 2s infinite;
+        }
+
+        @keyframes pulse-animation {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+
+        .shield-icon {
+            width: 14px;
+            height: 16px;
+            background-color: #22c55e;
+            clip-path: polygon(50% 0%, 100% 20%, 100% 60%, 50% 100%, 0% 60%, 0% 20%);
+            display: inline-block;
+        }
+
+        .status-indicator {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #22c55e;
+        }
+        
+        .alerte-rouge .pulse-dot, .alerte-rouge .shield-icon { background-color: #ef4444; animation: none; }
+        .alerte-rouge .status-indicator { color: #ef4444; }
+
+        .company-tag {
+            font-size: 14px;
+            font-weight: 600;
+            color: #38bdf8;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .alerte-rouge .company-tag { color: #fca5a5; }
+
+        .status-title { 
+            font-size: 22px; 
+            font-weight: 800; 
+            color: #ffffff; 
+            margin-bottom: 6px; 
+        }
+        
+        .phone-display { 
+            font-size: 12px; 
+            font-weight: 500; 
+            color: #94a3b8; 
+            margin-bottom: 24px; 
+        }
+        
+        .message-box { 
+            padding: 16px; 
+            border-radius: 16px; 
+            font-size: 13px; 
+            line-height: 1.6;
+            font-weight: 400;
+            background: #1e293b;
+            color: #cbd5e1;
+            border: 1px solid #334155;
+        }
+        .alerte-rouge .message-box { background: #450a0a; color: #fca5a5; border-color: #7f1d1d; }
+        .alerte-verte .message-box { background: #052e16; color: #86efac; border-color: #14532d; }
+
+        .footer-badge {
+            margin-top: 28px;
+            display: inline-block;
+            padding: 8px 16px;
+            background: #1e3a8a;
+            border: 1px solid #3b82f6;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="brand-header">
+            <div class="brand-dot"></div>
+            <div class="brand-name">Nexora Call</div>
+        </div>
+
+        <div id="resultat-card" class="card neutre">
+            <div class="status-header-container">
+                <div class="pulse-dot" id="card-dot"></div>
+                <div class="shield-icon" id="card-shield"></div>
+                <div class="status-indicator" id="card-indicator">Protection Active</div>
+            </div>
+            <div class="company-tag" id="card-company">Intelligence Active</div>
+            <div class="status-title" id="card-numero">En attente d'appel</div>
+            <div class="phone-display" id="card-subtitle">Analyse des flux entrants en temps réel</div>
+            <div class="message-box" id="card-text">
+                La ligne est sécurisée. Surveillance active des vecteurs d'usurpation et de spoofing bancaire en arrière-plan.
+            </div>
+        </div>
+
+        <div>
+            <div class="footer-badge">Système de défense anti-spoofing</div>
+        </div>
+    </div>
+
+    <script>
+        async function analyserNumero(numeroTelephone) {
+            try {
+                const response = await fetch('/api/verifier', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ numero: numeroTelephone })
+                });
+                const data = await response.json();
+                
+                const card = document.getElementById('resultat-card');
+                const indicator = document.getElementById('card-indicator');
+                const company = document.getElementById('card-company');
+                const title = document.getElementById('card-numero');
+                const subtitle = document.getElementById('card-subtitle');
+                const message = document.getElementById('card-text');
+
+                card.className = 'card ' + data.status;
+                company.innerText = data.societe;
+                title.innerText = data.numero;
+                subtitle.innerText = data.subtitle;
+                message.innerText = data.message;
+
+                if (data.status === 'alerte-rouge') {
+                    indicator.innerText = '⚠️ ALERTE FRAUDE';
+                } else if (data.status === 'alerte-verte') {
+                    indicator.innerText = '🛡️ SÉCURISÉ';
+                } else {
+                    indicator.innerText = 'PROTECTION ACTIVE';
+                }
+            } catch (error) {
+                console.error("Erreur de vérification:", error);
+            }
+        }
+    </script>
+
+</body>
+</html>
