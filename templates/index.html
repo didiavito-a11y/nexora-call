@@ -99,9 +99,6 @@
             letter-spacing: 2px;
             color: #22c55e;
         }
-        
-        .alerte-rouge .pulse-dot, .alerte-rouge .shield-icon { background-color: #ef4444; animation: none; }
-        .alerte-rouge .status-indicator { color: #ef4444; }
 
         .company-tag {
             font-size: 14px;
@@ -111,7 +108,6 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-        .alerte-rouge .company-tag { color: #fca5a5; }
 
         .status-title { 
             font-size: 22px; 
@@ -137,8 +133,80 @@
             color: #cbd5e1;
             border: 1px solid #334155;
         }
-        .alerte-rouge .message-box { background: #450a0a; color: #fca5a5; border-color: #7f1d1d; }
-        .alerte-verte .message-box { background: #052e16; color: #86efac; border-color: #14532d; }
+
+        /* Style du formulaire de saisie de clé */
+        .key-form {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            text-align: left;
+        }
+
+        .input-group {
+            position: relative;
+            width: 100%;
+        }
+
+        .key-input {
+            width: 100%;
+            padding: 14px 45px 14px 16px;
+            background: #030712;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .key-input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+        }
+
+        /* La petite croix pour effacer */
+        .clear-btn {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #334155;
+            border: none;
+            color: #ffffff;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            font-size: 12px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .clear-btn:hover {
+            background: #ef4444;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #0284c7, #2563eb);
+            border: none;
+            border-radius: 12px;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: opacity 0.2s;
+        }
+
+        .btn-submit:hover {
+            opacity: 0.9;
+        }
 
         .footer-badge {
             margin-top: 28px;
@@ -164,19 +232,47 @@
             <div class="brand-name">Nexora Call</div>
         </div>
 
-        <div id="resultat-card" class="card neutre">
+        {% if is_authenticated %}
+        <!-- CAS 1 : ACCÈS AUTORISÉ (Écran Vert / Actif) -->
+        <div class="card alerte-verte" id="resultat-card">
             <div class="status-header-container">
-                <div class="pulse-dot" id="card-dot"></div>
-                <div class="shield-icon" id="card-shield"></div>
-                <div class="status-indicator" id="card-indicator">Protection Active</div>
+                <div class="pulse-dot"></div>
+                <div class="shield-icon"></div>
+                <div class="status-indicator" style="color: #22c55e;">Protection Active</div>
             </div>
-            <div class="company-tag" id="card-company">Intelligence Active</div>
-            <div class="status-title" id="card-numero">En attente d'appel</div>
-            <div class="phone-display" id="card-subtitle">Analyse des flux entrants en temps réel</div>
-            <div class="message-box" id="card-text">
+            <div class="company-tag">Intelligence Active</div>
+            <div class="status-title">En attente d'appel</div>
+            <div class="phone-display">Analyse des flux entrants en temps réel</div>
+            <div class="message-box" style="background: #052e16; color: #86efac; border-color: #14532d;">
                 La ligne est sécurisée. Surveillance active des vecteurs d'usurpation et de spoofing bancaire en arrière-plan.
             </div>
         </div>
+
+        {% else %}
+        <!-- CAS 2 : DEMANDE DE CODE (Formulaire de Connexion) -->
+        <div class="card neutre" id="resultat-card">
+            <div class="status-header-container">
+                <div class="status-indicator" style="color: #38bdf8;">Authentification Requise</div>
+            </div>
+            <div class="company-tag">Nexora Security</div>
+            <div class="status-title">Accès Protégé</div>
+            <div class="phone-display">Veuillez entrer votre clé d'activation</div>
+            
+            <form action="/" method="GET" class="key-form">
+                <div class="input-group">
+                    <input type="text" id="keyInput" name="key" class="key-input" placeholder="Entrez votre code d'accès" value="{{ request.args.get('key', '') }}" required autocomplete="off">
+                    <button type="button" id="clearBtn" class="clear-btn" title="Effacer">&times;</button>
+                </div>
+                <button type="submit" class="btn-submit">Valider l'accès</button>
+            </form>
+
+            {% if error_message %}
+            <div class="message-box" style="margin-top: 15px; background: #450a0a; color: #fca5a5; border-color: #7f1d1d;">
+                {{ error_message }}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
 
         <div>
             <div class="footer-badge">Système de défense anti-spoofing</div>
@@ -184,38 +280,23 @@
     </div>
 
     <script>
-        async function analyserNumero(numeroTelephone) {
-            try {
-                const response = await fetch('/api/verifier', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ numero: numeroTelephone })
-                });
-                const data = await response.json();
-                
-                const card = document.getElementById('resultat-card');
-                const indicator = document.getElementById('card-indicator');
-                const company = document.getElementById('card-company');
-                const title = document.getElementById('card-numero');
-                const subtitle = document.getElementById('card-subtitle');
-                const message = document.getElementById('card-text');
+        // Gestion de la petite croix pour effacer le champ rapidement
+        const keyInput = document.getElementById('keyInput');
+        const clearBtn = document.getElementById('clearBtn');
 
-                card.className = 'card ' + data.status;
-                company.innerText = data.societe;
-                title.innerText = data.numero;
-                subtitle.innerText = data.subtitle;
-                message.innerText = data.message;
+        if (keyInput && clearBtn) {
+            const toggleClearButton = () => {
+                clearBtn.style.display = keyInput.value.length > 0 ? 'flex' : 'none';
+            };
 
-                if (data.status === 'alerte-rouge') {
-                    indicator.innerText = '⚠️ ALERTE FRAUDE';
-                } else if (data.status === 'alerte-verte') {
-                    indicator.innerText = '🛡️ SÉCURISÉ';
-                } else {
-                    indicator.innerText = 'PROTECTION ACTIVE';
-                }
-            } catch (error) {
-                console.error("Erreur de vérification:", error);
-            }
+            keyInput.addEventListener('input', toggleClearButton);
+            toggleClearButton(); // Vérification au chargement
+
+            clearBtn.addEventListener('click', () => {
+                keyInput.value = '';
+                toggleClearButton();
+                keyInput.focus();
+            });
         }
     </script>
 

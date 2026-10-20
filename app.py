@@ -45,7 +45,19 @@ ANNUAIRE_CONTACTS = {
 
 @app.route('/')
 def index():
-    return render_template('index.html', appel=None)
+    client_key = request.args.get('key', '').strip()
+    clients = charger_clients()
+
+    # Si aucune clé n'est fournie, on affiche l'écran de saisie du code
+    if not client_key:
+        return render_template('index.html', is_authenticated=False)
+
+    # Vérification si la clé existe et est active
+    if client_key in clients and clients[client_key].get('actif', False):
+        return render_template('index.html', is_authenticated=True, key=client_key)
+    else:
+        # Clé inconnue ou expirée
+        return render_template('index.html', is_authenticated=False, error_message="Clé d'activation invalide ou expirée.")
 
 @app.route('/api/verifier', methods=['POST'])
 def verifier():
@@ -153,5 +165,5 @@ def verifier():
     return jsonify(resultat)
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port, debug=True)
