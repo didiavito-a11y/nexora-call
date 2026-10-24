@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexora Call - Protection Active</title>
+    <link id="favicon-bouclier" rel="icon" type="image/png" href="{{ url_for('static', filename='bouclier_vert.png' if is_authenticated else 'bouclier_orange.png') }}">
     <style>
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
         body { 
@@ -134,7 +135,6 @@
             border: 1px solid #334155;
         }
 
-        /* Style du formulaire de saisie de clé */
         .key-form {
             margin-top: 20px;
             display: flex;
@@ -165,7 +165,6 @@
             box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
         }
 
-        /* La petite croix pour effacer */
         .clear-btn {
             position: absolute;
             right: 14px;
@@ -222,6 +221,119 @@
             text-transform: uppercase;
             box-shadow: 0 4px 12px rgba(30, 58, 138, 0.4);
         }
+
+        .nexora-footer-minimal {
+            margin-top: 16px;
+            text-align: center;
+            position: relative;
+            z-index: 9999;
+        }
+
+        .nexora-footer-links {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            flex-direction: row;
+            flex-wrap: nowrap;
+        }
+
+        .footer-btn-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .footer-btn-discreet {
+            background: rgba(15, 23, 42, 0.8);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            padding: 5px 10px;
+            border-radius: 16px;
+            font-size: 9.5px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(8px);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .footer-btn-discreet:hover, .footer-btn-discreet:focus {
+            background: rgba(56, 189, 248, 0.2);
+            color: #7dd3fc;
+            border-color: #38bdf8;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+        }
+
+        .info-popup {
+            display: none;
+            position: absolute;
+            bottom: 140%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 270px;
+            max-width: 90vw;
+            background: #090d16;
+            border: 1px solid rgba(56, 189, 248, 0.5);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.95), 0 0 20px rgba(56, 189, 248, 0.25);
+            text-align: left;
+            color: #cbd5e1;
+            font-size: 11px;
+            line-height: 1.5;
+            z-index: 10000 !important;
+            backdrop-filter: blur(12px);
+            pointer-events: auto;
+        }
+
+        .info-popup::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 6px;
+            border-style: solid;
+            border-color: #090d16 transparent transparent transparent;
+        }
+
+        .info-popup h4 {
+            margin: 0 0 6px 0;
+            color: #38bdf8;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-popup hr {
+            border: 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 8px 0;
+        }
+
+        .footer-btn-container:hover .info-popup,
+        .info-popup.active {
+            display: block !important;
+            animation: popupFade 0.2s ease-out;
+        }
+
+        @keyframes popupFade {
+            from { opacity: 0; transform: translate(-50%, 6px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+
+        .copyright-discreet {
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 10px;
+            margin-top: 8px;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -277,10 +389,49 @@
         <div>
             <div class="footer-badge">Système de défense anti-spoofing</div>
         </div>
+
+        <!-- FOOTER & MENTIONS LÉGALES DISCRETS SUR UNE LIGNE -->
+        <div class="nexora-footer-minimal">
+            <div class="nexora-footer-links">
+                
+                <!-- Bouton Mentions Légales & RGPD -->
+                <div class="footer-btn-container">
+                    <button class="footer-btn-discreet" onclick="togglePopup(event, 'popup-rgpd')">
+                        🛡️ Mentions Légales & RGPD
+                    </button>
+                    <div id="popup-rgpd" class="info-popup">
+                        <h4>🔒 Protection des Données</h4>
+                        <strong>Éditeur :</strong> Nexora Group // AI<br>
+                        <strong>Contact :</strong> nexus@nexoragroup.fr<br>
+                        <strong>Hébergeur :</strong> Cloud Sécurisé (Railway)
+                        <hr>
+                        <strong>Données collectées :</strong> Adresse IP et identifiant technique d'appareil (cookie de session).<br><br>
+                        <strong>Finalité :</strong> Sécurisation de la licence d'accès et prévention contre le piratage.<br><br>
+                        <strong>Confidentialité :</strong> Données strictement confidentielles, <u>jamais cédées ni vendues</u>. Droits d'accès et de suppression via le support.
+                    </div>
+                </div>
+
+                <!-- Bouton Conditions & Sécurité -->
+                <div class="footer-btn-container">
+                    <button class="footer-btn-discreet" onclick="togglePopup(event, 'popup-cgu')">
+                        ⚖️ Conditions & Sécurité
+                    </button>
+                    <div id="popup-cgu" class="info-popup">
+                        <h4>⚖️ Conditions d'Utilisation</h4>
+                        <strong>Usage de la clé :</strong> Strictement personnelle et réservée au titulaire ainsi qu'à son foyer autorisé.<br><br>
+                        <strong>Protection anti-partage :</strong> Tout prêt ou partage non autorisé entraînera le <strong>verrouillage automatique</strong> immédiat de la ligne.
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="copyright-discreet">
+                &copy; 2026 Nexora Call — Sécurité & Confiance
+            </div>
+        </div>
     </div>
 
     <script>
-        // Gestion de la petite croix pour effacer le champ rapidement
         const keyInput = document.getElementById('keyInput');
         const clearBtn = document.getElementById('clearBtn');
 
@@ -290,7 +441,7 @@
             };
 
             keyInput.addEventListener('input', toggleClearButton);
-            toggleClearButton(); // Vérification au chargement
+            toggleClearButton();
 
             clearBtn.addEventListener('click', () => {
                 keyInput.value = '';
@@ -298,6 +449,22 @@
                 keyInput.focus();
             });
         }
+
+        function togglePopup(event, popupId) {
+            event.stopPropagation();
+            const targetPopup = document.getElementById(popupId);
+            const isAlreadyOpen = targetPopup.classList.contains('active');
+            
+            document.querySelectorAll('.info-popup').forEach(p => p.classList.remove('active'));
+            
+            if (!isAlreadyOpen) {
+                targetPopup.classList.add('active');
+            }
+        }
+
+        document.addEventListener('click', function() {
+            document.querySelectorAll('.info-popup').forEach(p => p.classList.remove('active'));
+        });
     </script>
 
 </body>

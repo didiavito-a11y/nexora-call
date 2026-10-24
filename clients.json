@@ -1,6 +1,7 @@
 {
-    "TEST1234": {
-        "nom": "Mon Premier Test",
+    "NEXORA-ADMIN-2026": {
+        "nom": "Nexora Group // AI (Admin)",
+        "actif": true,
         "appareil_autorise": null
     }
 }
